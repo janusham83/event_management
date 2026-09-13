@@ -1,0 +1,77 @@
+html, body, #root {
+  margin: 0;
+  min-height: 100%;
+  min-height: 100vh;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: #eef2ff;
+  color: #111827;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+.qr-print-sheet {
+  display: none;
+}
+
+.qr-print-item {
+  display: none;
+}
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+
+  .qr-print-sheet,
+  .qr-print-sheet * {
+    visibility: visible;
+  }
+
+  .qr-print-sheet {
+    display: flex;
+    min-height: 100vh;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    text-align: center;
+  }
+}
+
+a {
+  text-decoration: none;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+.auth-shell {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  background: radial-gradient(circle at top, #f5f3ff, #eef2ff 60%, #e2e8f0);
+}
+
+.brand-mark {
+  background: linear-gradient(135deg, #4f46e5, #8b5cf6);
+  color: #fff;
+}
+
+.function-logo {
+  width: 42px;
+  height: 42px;
+  object-fit: contain;
+  border-radius: 8px;
+  background: #fff;
+  padding: 4px;
+}
+
+.function-logo-sm {
+  width: 32px;
+  height: 32px;
+}
