@@ -14,6 +14,10 @@
   gap: 1.25rem;
 }
 
+.mobile-header {
+  display: none;
+}
+
 .brand-wrap {
   display: flex;
   align-items: center;
@@ -160,9 +164,55 @@
     display: block;
   }
 
+  .mobile-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.85rem 1rem;
+    background: #111827;
+    color: #fff;
+  }
+
+  .mobile-header .brand-wrap {
+    min-width: 0;
+    padding: 0;
+    border: 0;
+  }
+
+  .mobile-header .brand-name {
+    max-width: 48vw;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .menu-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    flex-shrink: 0;
+    border: 1px solid rgba(255,255,255,0.22);
+    border-radius: 10px;
+    padding: 0.55rem 0.75rem;
+    background: transparent;
+    color: #fff;
+    font-weight: 600;
+  }
+
   .sidebar {
     width: 100%;
-    border-radius: 0 0 24px 24px;
+    display: none;
+    border-radius: 0 0 18px 18px;
+    padding: 0.75rem 1rem 1rem;
+  }
+
+  .sidebar.menu-open {
+    display: flex;
+  }
+
+  .sidebar > .brand-wrap {
+    display: none;
   }
 
   .nav-menu {
@@ -186,5 +236,11 @@
 
   .scanner-shell {
     min-height: 280px;
+  }
+}
+
+@media (min-width: 992px) {
+  .menu-toggle {
+    display: none;
   }
 }

@@ -26,9 +26,25 @@ const navigation = [
 ];
 
 function AppShell({ user, onLogout }) {
+  const [menuOpen, setMenuOpen] = useState(false);
+
   return (
     <div className="app-shell">
-      <aside className="sidebar">
+      <header className="mobile-header">
+        <div className="brand-wrap">
+          {user?.function_event?.logo_url ? <img className="function-logo" src={user.function_event.logo_url} alt="Function logo" /> : <div className="brand-mark">E</div>}
+          <div>
+            <div className="brand-name">{user?.function_event?.name || 'EventFlow'}</div>
+            <small className="text-muted">{user?.role === 'organizer' ? 'Organizer' : 'Admin Panel'}</small>
+          </div>
+        </div>
+        <button className="menu-toggle" type="button" aria-expanded={menuOpen} aria-controls="main-navigation" onClick={() => setMenuOpen((open) => !open)}>
+          <i className={`bi ${menuOpen ? 'bi-x-lg' : 'bi-list'}`}></i>
+          <span>{menuOpen ? 'Close' : 'Menu'}</span>
+        </button>
+      </header>
+
+      <aside className={`sidebar ${menuOpen ? 'menu-open' : ''}`}>
         <div className="brand-wrap">
           {user?.function_event?.logo_url ? <img className="function-logo" src={user.function_event.logo_url} alt="Function logo" /> : <div className="brand-mark">E</div>}
           <div>
@@ -37,9 +53,9 @@ function AppShell({ user, onLogout }) {
           </div>
         </div>
 
-        <nav className="nav-menu">
+        <nav className="nav-menu" id="main-navigation">
           {navigation.filter((item) => !item.adminOnly || user?.role === 'admin').map((item) => (
-            <NavLink key={item.path} to={item.path} className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+            <NavLink key={item.path} to={item.path} onClick={() => setMenuOpen(false)} className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
               <i className={item.icon}></i>
               <span>{item.label}</span>
             </NavLink>
