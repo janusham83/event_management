@@ -66,6 +66,87 @@ const ParticipantPage = () => {
     }
   };
 
+  const handleManualAttendance = async (participant) => {
+    try {
+      let attendance = participant.attendance;
+
+      if (participant.attendance) {
+        await api.delete('/attendance/manual', { data: {
+          function_id: participant.function_id,
+          participant_id: participant.id,
+        } });
+        attendance = null;
+      } else {
+        const response = await api.post('/attendance/manual', {
+          function_id: participant.function_id,
+          participant_id: participant.id,
+        });
+        attendance = response.data.attendance;
+      }
+      setParticipants((currentParticipants) => currentParticipants.map((item) => (
+        item.id === participant.id
+          ? { ...item, attendance }
+          : item
+      )));
+    } catch (error) {
+      window.alert(error.response?.data?.message || 'Unable to mark attendance.');
+    }
+  };
+
+  const handlePhotoShootToggle = async (participant) => {
+    try {
+      let photoShoot = participant.photo_shoot;
+
+      if (participant.photo_shoot) {
+        await api.delete('/photo-shoot/manual', { data: {
+          function_id: participant.function_id,
+          participant_id: participant.id,
+        } });
+        photoShoot = null;
+      } else {
+        const response = await api.post('/photo-shoot/manual', {
+          function_id: participant.function_id,
+          participant_id: participant.id,
+        });
+        photoShoot = response.data.photo_shoot;
+      }
+
+      setParticipants((currentParticipants) => currentParticipants.map((item) => (
+        item.id === participant.id
+          ? { ...item, photo_shoot: photoShoot }
+          : item
+      )));
+    } catch (error) {
+      window.alert(error.response?.data?.message || 'Unable to update photo shoot status.');
+    }
+  };
+
+  const handlePaymentToggle = async (participant) => {
+    try {
+      let payment = participant.payment;
+
+      if (participant.payment) {
+        await api.delete('/payment/manual', { data: {
+          function_id: participant.function_id,
+          participant_id: participant.id,
+        } });
+        payment = null;
+      } else {
+        const response = await api.post('/payment/manual', {
+          function_id: participant.function_id,
+          participant_id: participant.id,
+        });
+        payment = response.data.payment;
+      }
+
+      setParticipants((currentParticipants) => currentParticipants.map((item) => (
+        item.id === participant.id ? { ...item, payment } : item
+      )));
+    } catch (error) {
+      window.alert(error.response?.data?.message || 'Unable to update payment status.');
+    }
+  };
+
   const handleEdit = (participant) => {
     setEditingParticipant(participant);
     setForm({
@@ -208,6 +289,9 @@ const ParticipantPage = () => {
             <ParticipantCard
               participant={participant}
               onQuickAction={handleQuickAction}
+              onAttendanceToggle={handleManualAttendance}
+              onPhotoShootToggle={handlePhotoShootToggle}
+              onPaymentToggle={handlePaymentToggle}
               onEdit={handleEdit}
               onDelete={handleDelete}
               onPrintQr={handlePrintQr}

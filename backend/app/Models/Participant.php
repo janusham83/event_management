@@ -36,6 +36,11 @@ class Participant extends Model
         return $this->hasOne(PhotoShoot::class);
     }
 
+    public function payment(): HasOne
+    {
+        return $this->hasOne(Payment::class);
+    }
+
     public function issueTickets(): HasMany
     {
         return $this->hasMany(IssueTicket::class);

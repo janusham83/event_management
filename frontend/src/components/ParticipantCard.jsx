@@ -1,8 +1,9 @@
 import StatusBadge from './StatusBadge';
 
-const ParticipantCard = ({ participant, onQuickAction, onEdit, onDelete, onPrintQr, selected, onToggleSelect }) => {
+const ParticipantCard = ({ participant, onQuickAction, onAttendanceToggle, onPhotoShootToggle, onPaymentToggle, onEdit, onDelete, onPrintQr, selected, onToggleSelect }) => {
   const attendanceStatus = participant.attendance ? '✓ Attended' : 'Pending';
   const photoStatus = participant.photo_shoot ? '✓ Completed' : 'Pending';
+  const paymentStatus = participant.payment ? '✓ Paid' : 'Pending';
 
   return (
     <div className="card border-0 shadow-sm h-100">
@@ -22,13 +23,19 @@ const ParticipantCard = ({ participant, onQuickAction, onEdit, onDelete, onPrint
           <div><strong>Function:</strong> {participant.function_event?.name || 'N/A'}</div>
           <div><strong>Attendance:</strong> {attendanceStatus}</div>
           <div><strong>Photo Shoot:</strong> {photoStatus}</div>
-          <div><strong>Issues:</strong> {participant.issue_tickets?.length || 0}</div>
+          <div><strong>Payment:</strong> {paymentStatus}</div>
         </div>
 
         <div className="d-flex flex-wrap gap-2 mt-3">
-          <button className="btn btn-sm btn-outline-primary" onClick={() => onQuickAction('attendance', participant)}>Mark Attendance</button>
-          <button className="btn btn-sm btn-outline-success" onClick={() => onQuickAction('photo', participant)}>Photo Shoot</button>
-          <button className="btn btn-sm btn-outline-warning" onClick={() => onQuickAction('ticket', participant)}>Register Issue</button>
+          <button className={`btn btn-sm ${participant.attendance ? 'btn-outline-danger' : 'btn-outline-primary'}`} onClick={() => onAttendanceToggle(participant)}>
+            {participant.attendance ? 'Undo Attendance' : 'Mark Attendance'}
+          </button>
+          <button className={`btn btn-sm ${participant.photo_shoot ? 'btn-outline-danger' : 'btn-outline-success'}`} onClick={() => onPhotoShootToggle(participant)}>
+            {participant.photo_shoot ? 'Undo Photo Shoot' : 'Mark Photo Shoot'}
+          </button>
+          <button className={`btn btn-sm ${participant.payment ? 'btn-outline-danger' : 'btn-outline-warning'}`} onClick={() => onPaymentToggle(participant)}>
+            {participant.payment ? 'Undo Payment' : 'Mark Payment'}
+          </button>
           <button className="btn btn-sm btn-outline-dark" onClick={() => onPrintQr(participant)} title="Print QR code">
             <i className="bi bi-printer"></i>
             <span className="visually-hidden">Print QR code</span>

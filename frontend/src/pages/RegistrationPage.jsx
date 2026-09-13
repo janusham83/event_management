@@ -7,8 +7,6 @@ const RegistrationPage = ({ user }) => {
     full_name: '',
     mobile_number: '',
     email: '',
-    organization: '',
-    number_of_guests: 0,
     function_id: 1,
   });
   const [registered, setRegistered] = useState(null);
@@ -111,14 +109,6 @@ const RegistrationPage = ({ user }) => {
             <div className="col-md-6">
               <label className="form-label">Email</label>
               <input type="email" className="form-control" name="email" value={form.email} onChange={handleChange} required />
-            </div>
-            <div className="col-md-6">
-              <label className="form-label">Organization / Batch / Group</label>
-              <input className="form-control" name="organization" value={form.organization} onChange={handleChange} />
-            </div>
-            <div className="col-md-6">
-              <label className="form-label">Number of Guests</label>
-              <input type="number" className="form-control" name="number_of_guests" value={form.number_of_guests} onChange={handleChange} min="0" />
             </div>
             <div className="col-md-6">
               <label className="form-label">Function</label>

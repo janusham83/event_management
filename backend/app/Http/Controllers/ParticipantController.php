@@ -12,7 +12,7 @@ class ParticipantController extends Controller
 {
     public function index()
     {
-        $query = Participant::with(['functionEvent', 'attendance', 'photoShoot', 'issueTickets'])->latest();
+        $query = Participant::with(['functionEvent', 'attendance', 'photoShoot', 'payment', 'issueTickets'])->latest();
         if (auth()->user()->role === 'organizer') {
             $query->where('function_id', auth()->user()->function_id);
         }
@@ -54,7 +54,7 @@ class ParticipantController extends Controller
 
     public function template()
     {
-        return response("full_name,mobile_number,email,organization,number_of_guests\nJohn Doe,0771234567,john@example.com,Example Group,0\n")
+        return response("full_name,mobile_number,email\nJohn Doe,0771234567,john@example.com\n")
             ->header('Content-Type', 'text/csv; charset=UTF-8')
             ->header('Content-Disposition', 'attachment; filename=participant-registration-template.csv');
     }
@@ -67,7 +67,7 @@ class ParticipantController extends Controller
 
         $handle = fopen($request->file('file')->getRealPath(), 'r');
         $headers = array_map(fn ($header) => strtolower(trim($header)), fgetcsv($handle));
-        $required = ['full_name', 'mobile_number', 'email', 'organization', 'number_of_guests'];
+        $required = ['full_name', 'mobile_number', 'email'];
         if (array_diff($required, $headers)) {
             fclose($handle);
             return response()->json(['message' => 'Invalid template. Download the registration template and keep its column headers.'], 422);
@@ -84,8 +84,6 @@ class ParticipantController extends Controller
                 'full_name' => ['required', 'string', 'max:255'],
                 'mobile_number' => ['required', 'string', 'max:20'],
                 'email' => ['required', 'email', 'max:255'],
-                'organization' => ['nullable', 'string', 'max:255'],
-                'number_of_guests' => ['nullable', 'integer', 'min:0'],
             ]);
             if ($validation->fails()) {
                 $errors[] = ['row' => $line, 'errors' => $validation->errors()->all()];

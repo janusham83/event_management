@@ -2,13 +2,13 @@ import { useState } from 'react';
 import QRScanner from '../components/QRScanner';
 import api from '../api';
 
-const PhotoShootScanPage = () => {
+const PhotoShootScanPage = ({ user }) => {
   const [result, setResult] = useState(null);
 
   const handleScan = async (decodedText) => {
     try {
       const response = await api.post('/photo-shoot/scan', {
-        function_id: 1,
+        function_id: user?.function_id,
         qr_token: decodedText,
       });
 
@@ -22,10 +22,12 @@ const PhotoShootScanPage = () => {
 
   return (
     <div className="row g-4">
-      <div className="col-lg-6">
-        <QRScanner onScan={handleScan} title="Photo Shoot Scanner" />
-      </div>
-      <div className="col-lg-6">
+      {!result && (
+        <div className="col-lg-6">
+          <QRScanner onScan={handleScan} title="Photo Shoot Scanner" />
+        </div>
+      )}
+      <div className={result ? 'col-12' : 'col-lg-6'}>
         {result ? (
           <div className="d-flex flex-column gap-3">
             {result.status === 'completed' ? (

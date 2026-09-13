@@ -67,6 +67,59 @@ const ReportsPage = () => {
           </div>
         </div>
       </div>
+
+      <div className="col-12">
+        <div className="card border-0 shadow-sm">
+          <div className="card-body">
+            <h4 className="fw-bold mb-3">Participant Attendance & Photo Shoot Summary</h4>
+            <div className="table-responsive">
+              <table className="table align-middle mb-0">
+                <thead>
+                  <tr>
+                    <th>Participant</th>
+                    <th>Registration</th>
+                    <th>Function</th>
+                    <th>Attendance</th>
+                    <th>Photo Shoot</th>
+                    <th>Payment</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {report?.participants?.length ? report.participants.map((participant) => (
+                    <tr key={participant.id}>
+                      <td>
+                        <div className="fw-semibold">{participant.full_name}</div>
+                        <small className="text-muted">{participant.mobile_number}</small>
+                      </td>
+                      <td>{participant.registration_number}</td>
+                      <td>{participant.function_name || 'N/A'}</td>
+                      <td>
+                        <span className={`badge ${participant.attendance ? 'bg-success' : 'bg-secondary'}`}>
+                          {participant.attendance ? 'Attended' : 'Not Attended'}
+                        </span>
+                      </td>
+                      <td>
+                        <span className={`badge ${participant.photo_shoot ? 'bg-success' : 'bg-secondary'}`}>
+                          {participant.photo_shoot ? 'Completed' : 'Not Completed'}
+                        </span>
+                      </td>
+                      <td>
+                        <span className={`badge ${participant.payment ? 'bg-success' : 'bg-secondary'}`}>
+                          {participant.payment ? 'Paid' : 'Not Paid'}
+                        </span>
+                      </td>
+                    </tr>
+                  )) : (
+                    <tr>
+                      <td className="text-muted text-center py-4" colSpan="6">No participants found.</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

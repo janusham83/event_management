@@ -2,14 +2,14 @@ import { useState } from 'react';
 import QRScanner from '../components/QRScanner';
 import api from '../api';
 
-const AttendanceScanPage = () => {
+const AttendanceScanPage = ({ user }) => {
   const [result, setResult] = useState(null);
   const [scanState, setScanState] = useState('idle');
 
   const handleScan = async (decodedText) => {
     try {
       const response = await api.post('/attendance/scan', {
-        function_id: 1,
+        function_id: user?.function_id,
         qr_token: decodedText,
       });
 
@@ -65,10 +65,12 @@ const AttendanceScanPage = () => {
 
   return (
     <div className="row g-4">
-      <div className="col-lg-6">
-        <QRScanner onScan={handleScan} onError={() => setResult({ status: 'invalid', message: 'Unable to open camera' })} title="Attendance Scanner" />
-      </div>
-      <div className="col-lg-6">
+      {!result && (
+        <div className="col-lg-6">
+          <QRScanner onScan={handleScan} title="Attendance Scanner" />
+        </div>
+      )}
+      <div className={result ? 'col-12' : 'col-lg-6'}>
         {result ? (
           <div className="d-flex flex-column gap-3">
             {getStatusContent()}

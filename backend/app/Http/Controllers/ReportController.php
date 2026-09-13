@@ -16,7 +16,33 @@ class ReportController extends Controller
             'attendance' => $this->attendanceReport($request, true),
             'photo_shoot' => $this->photoShootReport($request, true),
             'issues' => $this->issueReport($request, true),
+            'participants' => $this->participantSummary($request),
         ]);
+    }
+
+    private function participantSummary(Request $request)
+    {
+        $query = Participant::with(['functionEvent', 'attendance', 'photoShoot', 'payment']);
+        $functionId = $this->scopedFunctionId($request);
+        if ($functionId) $query->where('function_id', $functionId);
+        if ($request->date) $query->whereDate('created_at', $request->date);
+
+        return $query->latest()->get()->map(fn (Participant $participant) => [
+            'id' => $participant->id,
+            'full_name' => $participant->full_name,
+            'registration_number' => $participant->registration_number,
+            'mobile_number' => $participant->mobile_number,
+            'function_name' => $participant->functionEvent?->name,
+            'attendance' => $participant->attendance ? [
+                'marked_at' => $participant->attendance->marked_at,
+            ] : null,
+            'photo_shoot' => $participant->photoShoot ? [
+                'completed_at' => $participant->photoShoot->completed_at,
+            ] : null,
+            'payment' => $participant->payment ? [
+                'paid_at' => $participant->payment->paid_at,
+            ] : null,
+        ])->values();
     }
 
     public function attendanceReport(Request $request, $asJson = false)

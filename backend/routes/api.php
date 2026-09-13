@@ -7,6 +7,7 @@ use App\Http\Controllers\FunctionController;
 use App\Http\Controllers\IssueTicketController;
 use App\Http\Controllers\ParticipantController;
 use App\Http\Controllers\PhotoShootController;
+use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ReportController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -38,10 +39,18 @@ Route::prefix('v1')->group(function () {
             Route::get('/participants/search', [ParticipantController::class, 'search']);
 
             Route::post('/attendance/scan', [AttendanceController::class, 'scan']);
+            Route::post('/attendance/manual', [AttendanceController::class, 'manual']);
+            Route::delete('/attendance/manual', [AttendanceController::class, 'unmark']);
             Route::get('/attendance/report', [ReportController::class, 'attendanceReport']);
 
             Route::post('/photo-shoot/scan', [PhotoShootController::class, 'scan']);
+            Route::post('/photo-shoot/manual', [PhotoShootController::class, 'manual']);
+            Route::delete('/photo-shoot/manual', [PhotoShootController::class, 'unmark']);
             Route::get('/photo-shoot/report', [ReportController::class, 'photoShootReport']);
+
+            Route::post('/payment/manual', [PaymentController::class, 'manual']);
+            Route::delete('/payment/manual', [PaymentController::class, 'unmark']);
+            Route::post('/payment/scan', [PaymentController::class, 'scan']);
 
             Route::apiResource('tickets', IssueTicketController::class);
             Route::get('/tickets/search', [IssueTicketController::class, 'search']);

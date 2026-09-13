@@ -10,7 +10,7 @@ import ParticipantPage from './pages/ParticipantPage';
 import RegistrationPage from './pages/RegistrationPage';
 import AttendanceScanPage from './pages/AttendanceScanPage';
 import PhotoShootScanPage from './pages/PhotoShootScanPage';
-import TicketPage from './pages/TicketPage';
+import PaymentScanPage from './pages/PaymentScanPage';
 import ReportsPage from './pages/ReportsPage';
 import ParticipantDetailPage from './pages/ParticipantDetailPage';
 
@@ -20,7 +20,7 @@ const navigation = [
   { path: '/participants', label: 'Participants', icon: 'bi bi-people' },
   { path: '/attendance/scan', label: 'Attendance', icon: 'bi bi-qr-code-scan' },
   { path: '/photo-shoot/scan', label: 'Photo Shoot', icon: 'bi bi-camera' },
-  { path: '/tickets', label: 'Tickets', icon: 'bi bi-ticket-detailed' },
+  { path: '/payment/scan', label: 'Tickets', icon: 'bi bi-ticket-detailed' },
   { path: '/reports', label: 'Reports', icon: 'bi bi-bar-chart' },
   { path: '/register', label: 'Register', icon: 'bi bi-person-plus' },
 ];
@@ -80,10 +80,9 @@ function AppShell({ user, onLogout }) {
           <Route path="/participants" element={<ParticipantPage />} />
           <Route path="/participants/:id" element={<ParticipantDetailPage />} />
           <Route path="/register" element={<RegistrationPage user={user} />} />
-          <Route path="/attendance/scan" element={<AttendanceScanPage />} />
-          <Route path="/photo-shoot/scan" element={<PhotoShootScanPage />} />
-          <Route path="/tickets" element={<TicketPage user={user} />} />
-          <Route path="/tickets/new" element={<TicketPage user={user} />} />
+          <Route path="/attendance/scan" element={<AttendanceScanPage user={user} />} />
+          <Route path="/photo-shoot/scan" element={<PhotoShootScanPage user={user} />} />
+          <Route path="/payment/scan" element={<PaymentScanPage user={user} />} />
           <Route path="/reports" element={<ReportsPage />} />
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>

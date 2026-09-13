@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Participant;
 use App\Models\PhotoShoot;
+use App\Models\FunctionEvent;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -17,6 +18,10 @@ class PhotoShootController extends Controller
         ]);
         if (auth()->user()->role === 'organizer' && (int) $data['function_id'] !== (int) auth()->user()->function_id) {
             return response()->json(['message' => 'You can only use your assigned function.'], 403);
+        }
+        $function = FunctionEvent::findOrFail($data['function_id']);
+        if ($function->status !== 'active') {
+            return response()->json(['status' => 'invalid', 'message' => 'This event is inactive. QR scanning is not available.'], 422);
         }
 
         $participant = Participant::where('qr_token', $data['qr_token'])->first();
@@ -55,5 +60,77 @@ class PhotoShootController extends Controller
             'participant' => $participant,
             'photo_shoot' => $photoShoot,
         ]);
+    }
+
+    public function manual(Request $request)
+    {
+        $data = $request->validate([
+            'function_id' => ['required', 'exists:function_events,id'],
+            'participant_id' => ['required', 'exists:participants,id'],
+        ]);
+        $this->authorizeFunction($data['function_id']);
+
+        $participant = Participant::findOrFail($data['participant_id']);
+        $this->ensureParticipantFunction($participant, $data['function_id']);
+
+        $photoShoot = PhotoShoot::where('participant_id', $participant->id)->first();
+        if ($photoShoot) {
+            return response()->json([
+                'status' => 'already_completed',
+                'message' => 'Photo Shoot Already Completed',
+                'participant' => $participant,
+                'photo_shoot' => $photoShoot,
+            ]);
+        }
+
+        $photoShoot = DB::transaction(fn () => PhotoShoot::create([
+            'participant_id' => $participant->id,
+            'function_id' => $data['function_id'],
+            'user_id' => auth()->id(),
+            'completed_at' => now(),
+        ]));
+
+        return response()->json([
+            'status' => 'completed',
+            'message' => 'Photo Shoot Completed',
+            'participant' => $participant,
+            'photo_shoot' => $photoShoot,
+        ]);
+    }
+
+    public function unmark(Request $request)
+    {
+        $data = $request->validate([
+            'function_id' => ['required', 'exists:function_events,id'],
+            'participant_id' => ['required', 'exists:participants,id'],
+        ]);
+        $this->authorizeFunction($data['function_id']);
+
+        $participant = Participant::findOrFail($data['participant_id']);
+        $this->ensureParticipantFunction($participant, $data['function_id']);
+
+        $deleted = PhotoShoot::where('participant_id', $participant->id)
+            ->where('function_id', $data['function_id'])
+            ->delete();
+
+        if (! $deleted) {
+            return response()->json(['message' => 'Photo Shoot is not marked for this participant.'], 404);
+        }
+
+        return response()->json(['status' => 'unmarked', 'message' => 'Photo Shoot undone']);
+    }
+
+    private function authorizeFunction(int $functionId): void
+    {
+        if (auth()->user()->role === 'organizer' && $functionId !== (int) auth()->user()->function_id) {
+            abort(403, 'You can only use your assigned function.');
+        }
+    }
+
+    private function ensureParticipantFunction(Participant $participant, int $functionId): void
+    {
+        if ((int) $participant->function_id !== $functionId) {
+            abort(422, 'Participant does not belong to this function');
+        }
     }
 }
