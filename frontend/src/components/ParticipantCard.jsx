@@ -1,6 +1,6 @@
 import StatusBadge from './StatusBadge';
 
-const ParticipantCard = ({ participant, onQuickAction, onAttendanceToggle, onPhotoShootToggle, onPaymentToggle, onEdit, onDelete, onPrintQr, selected, onToggleSelect }) => {
+const ParticipantCard = ({ participant, onQuickAction, onAttendanceToggle, onPhotoShootToggle, onPaymentToggle, onEdit, onDelete, onPrintQr, selected, onToggleSelect, canMarkAttendance = true, canMarkPhotoShoot = true }) => {
   const attendanceStatus = participant.attendance ? '✓ Attended' : 'Pending';
   const photoStatus = participant.photo_shoot ? '✓ Completed' : 'Pending';
   const paymentStatus = participant.payment ? '✓ Paid' : 'Pending';
@@ -27,10 +27,10 @@ const ParticipantCard = ({ participant, onQuickAction, onAttendanceToggle, onPho
         </div>
 
         <div className="d-flex flex-wrap gap-2 mt-3">
-          <button className={`btn btn-sm ${participant.attendance ? 'btn-outline-danger' : 'btn-outline-primary'}`} onClick={() => onAttendanceToggle(participant)}>
+          <button className={`btn btn-sm ${participant.attendance ? 'btn-outline-danger' : 'btn-outline-primary'}`} onClick={() => onAttendanceToggle(participant)} disabled={!participant.attendance && !canMarkAttendance}>
             {participant.attendance ? 'Undo Attendance' : 'Mark Attendance'}
           </button>
-          <button className={`btn btn-sm ${participant.photo_shoot ? 'btn-outline-danger' : 'btn-outline-success'}`} onClick={() => onPhotoShootToggle(participant)}>
+          <button className={`btn btn-sm ${participant.photo_shoot ? 'btn-outline-danger' : 'btn-outline-success'}`} onClick={() => onPhotoShootToggle(participant)} disabled={!participant.photo_shoot && !canMarkPhotoShoot}>
             {participant.photo_shoot ? 'Undo Photo Shoot' : 'Mark Photo Shoot'}
           </button>
           <button className={`btn btn-sm ${participant.payment ? 'btn-outline-danger' : 'btn-outline-warning'}`} onClick={() => onPaymentToggle(participant)}>

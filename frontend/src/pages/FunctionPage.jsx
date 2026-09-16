@@ -7,7 +7,7 @@ const FunctionPage = ({ canManage = false }) => {
   const [loading, setLoading] = useState(true);
   const [form, setForm] = useState({
     name: '',
-    logo_url: '',
+    logo: null,
     date: '',
     start_time: '',
     end_time: '',
@@ -39,35 +39,28 @@ const FunctionPage = ({ canManage = false }) => {
   }, []);
 
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    setForm({ ...form, [e.target.name]: e.target.type === 'file' ? e.target.files[0] : e.target.value });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      const payload = new FormData();
+      Object.entries(form).forEach(([key, value]) => {
+        if (value !== null && value !== '') payload.append(key, value);
+      });
+      if (editingFunction) payload.append('_method', 'PUT');
+
       if (editingFunction) {
-        await api.put(`/functions/${editingFunction.id}`, {
-          name: form.name,
-          logo_url: form.logo_url,
-          date: form.date,
-          start_time: form.start_time,
-          end_time: form.end_time,
-          venue: form.venue,
-          description: form.description,
-          status: form.status,
-          organizer_name: form.organizer_name,
-          organizer_email: form.organizer_email,
-          organizer_password: form.organizer_password || undefined,
-          organizer_phone: form.organizer_phone,
-        });
+        await api.post(`/functions/${editingFunction.id}`, payload, { headers: { 'Content-Type': 'multipart/form-data' } });
       } else {
-        const response = await api.post('/functions', form);
+        const response = await api.post('/functions', payload, { headers: { 'Content-Type': 'multipart/form-data' } });
         setCredentials(response.data.credentials);
       }
       setEditingFunction(null);
       setForm({
         name: '',
-        logo_url: '',
+        logo: null,
         date: '',
         start_time: '',
         end_time: '',
@@ -90,7 +83,7 @@ const FunctionPage = ({ canManage = false }) => {
     setCredentials(null);
     setForm({
       name: event.name,
-      logo_url: event.logo_url || '',
+      logo: null,
       date: event.date?.slice(0, 10) || '',
       start_time: event.start_time?.slice(0, 5) || '',
       end_time: event.end_time?.slice(0, 5) || '',
@@ -110,7 +103,7 @@ const FunctionPage = ({ canManage = false }) => {
   const handleCancelEdit = () => {
     setEditingFunction(null);
     setForm({
-      name: '', logo_url: '', date: '', start_time: '', end_time: '', venue: '', description: '', status: 'active',
+      name: '', logo: null, date: '', start_time: '', end_time: '', venue: '', description: '', status: 'active',
       organizer_name: '', organizer_email: '', organizer_password: '', organizer_phone: '',
     });
   };
@@ -143,8 +136,9 @@ const FunctionPage = ({ canManage = false }) => {
                 <input className="form-control" name="name" value={form.name} onChange={handleChange} required />
               </div>
               <div className="mb-3">
-                <label className="form-label">Function Logo URL</label>
-                <input type="url" className="form-control" name="logo_url" value={form.logo_url} onChange={handleChange} placeholder="https://example.com/logo.png" />
+                <label className="form-label">Function Logo</label>
+                <input type="file" className="form-control" name="logo" accept="image/png,image/jpeg,image/webp" onChange={handleChange} />
+                <small className="text-muted">PNG, JPG, or WebP up to 2 MB.</small>
               </div>
               <div className="mb-3">
                 <label className="form-label">Date</label>

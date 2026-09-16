@@ -23,6 +23,10 @@ class PhotoShootController extends Controller
         if ($function->status !== 'active') {
             return response()->json(['status' => 'invalid', 'message' => 'This event is inactive. QR scanning is not available.'], 422);
         }
+        $availability = $function->scannerAvailability();
+        if (! $availability['available']) {
+            return response()->json(['status' => 'invalid', 'message' => $availability['message']], 422);
+        }
 
         $participant = Participant::where('qr_token', $data['qr_token'])->first();
 
@@ -69,6 +73,14 @@ class PhotoShootController extends Controller
             'participant_id' => ['required', 'exists:participants,id'],
         ]);
         $this->authorizeFunction($data['function_id']);
+        $function = FunctionEvent::findOrFail($data['function_id']);
+        if ($function->status !== 'active') {
+            return response()->json(['message' => 'This event is inactive. Photo shoot marking is not available.'], 422);
+        }
+        $availability = $function->scannerAvailability();
+        if (! $availability['available']) {
+            return response()->json(['message' => $availability['message']], 422);
+        }
 
         $participant = Participant::findOrFail($data['participant_id']);
         $this->ensureParticipantFunction($participant, $data['function_id']);

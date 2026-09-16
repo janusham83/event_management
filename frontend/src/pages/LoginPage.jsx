@@ -2,7 +2,7 @@ import { useState } from 'react';
 import api from '../api';
 
 const LoginPage = ({ onLoginSuccess }) => {
-  const [form, setForm] = useState({ email: 'admin@event.com', password: 'admin123' });
+  const [form, setForm] = useState({ email: '', password: '' });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -60,9 +60,6 @@ const LoginPage = ({ onLoginSuccess }) => {
                   </button>
                 </form>
 
-                <div className="mt-4 small text-muted">
-                  Demo accounts: admin@event.com / admin123 or staff@event.com / staff123
-                </div>
               </div>
             </div>
           </div>

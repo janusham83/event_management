@@ -23,6 +23,10 @@ class AttendanceController extends Controller
         if ($function->status !== 'active') {
             return response()->json(['status' => 'invalid', 'message' => 'This event is inactive. QR scanning is not available.'], 422);
         }
+        $availability = $function->scannerAvailability();
+        if (! $availability['available']) {
+            return response()->json(['status' => 'invalid', 'message' => $availability['message']], 422);
+        }
 
         $participant = Participant::where('qr_token', $data['qr_token'])->first();
 
@@ -45,6 +49,14 @@ class AttendanceController extends Controller
         ]);
         if (auth()->user()->role === 'organizer' && (int) $data['function_id'] !== (int) auth()->user()->function_id) {
             return response()->json(['message' => 'You can only use your assigned function.'], 403);
+        }
+        $function = FunctionEvent::findOrFail($data['function_id']);
+        if ($function->status !== 'active') {
+            return response()->json(['message' => 'This event is inactive. Attendance marking is not available.'], 422);
+        }
+        $availability = $function->scannerAvailability();
+        if (! $availability['available']) {
+            return response()->json(['message' => $availability['message']], 422);
         }
 
         $participant = Participant::findOrFail($data['participant_id']);

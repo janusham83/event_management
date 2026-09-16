@@ -24,7 +24,7 @@ class ParticipantController extends Controller
         $data = $request->validate([
             'full_name' => ['required', 'string', 'max:255'],
             'mobile_number' => ['required', 'string', 'max:20'],
-            'email' => ['required', 'email', 'max:255'],
+            'email' => ['nullable', 'email', 'max:255'],
             'organization' => ['nullable', 'string', 'max:255'],
             'number_of_guests' => ['nullable', 'integer', 'min:0'],
             'function_id' => ['required', 'exists:function_events,id'],
@@ -39,7 +39,7 @@ class ParticipantController extends Controller
         $participant = Participant::create([
             'full_name' => $data['full_name'],
             'mobile_number' => $data['mobile_number'],
-            'email' => $data['email'],
+            'email' => $data['email'] ?? null,
             'organization' => $data['organization'] ?? null,
             'number_of_guests' => $data['number_of_guests'] ?? 0,
             'registration_number' => $registrationNumber,
@@ -83,7 +83,7 @@ class ParticipantController extends Controller
             $validation = validator($row, [
                 'full_name' => ['required', 'string', 'max:255'],
                 'mobile_number' => ['required', 'string', 'max:20'],
-                'email' => ['required', 'email', 'max:255'],
+                'email' => ['nullable', 'email', 'max:255'],
             ]);
             if ($validation->fails()) {
                 $errors[] = ['row' => $line, 'errors' => $validation->errors()->all()];

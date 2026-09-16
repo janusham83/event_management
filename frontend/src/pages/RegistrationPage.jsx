@@ -108,7 +108,7 @@ const RegistrationPage = ({ user }) => {
             </div>
             <div className="col-md-6">
               <label className="form-label">Email</label>
-              <input type="email" className="form-control" name="email" value={form.email} onChange={handleChange} required />
+              <input type="email" className="form-control" name="email" value={form.email} onChange={handleChange} />
             </div>
             <div className="col-md-6">
               <label className="form-label">Function</label>

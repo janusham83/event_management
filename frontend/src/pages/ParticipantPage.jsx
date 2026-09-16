@@ -6,6 +6,18 @@ import SearchBox from '../components/SearchBox';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { QRCodeSVG } from 'qrcode.react';
 
+function isScannerAvailable(functionEvent) {
+  if (!functionEvent?.date || !functionEvent?.start_time || !functionEvent?.end_time || functionEvent.status !== 'active') return false;
+
+  const date = functionEvent.date.slice(0, 10);
+  const start = new Date(`${date}T${functionEvent.start_time}`);
+  const end = new Date(`${date}T${functionEvent.end_time}`);
+  const now = new Date();
+  const today = [now.getFullYear(), String(now.getMonth() + 1).padStart(2, '0'), String(now.getDate()).padStart(2, '0')].join('-');
+
+  return today === date && now >= new Date(start.getTime() - 2 * 60 * 60 * 1000) && now <= end;
+}
+
 const emptyForm = {
   full_name: '',
   mobile_number: '',
@@ -121,6 +133,8 @@ const ParticipantPage = () => {
     }
   };
 
+  const canMarkParticipant = (participant) => isScannerAvailable(participant.function_event);
+
   const handlePaymentToggle = async (participant) => {
     try {
       let payment = participant.payment;
@@ -210,13 +224,15 @@ const ParticipantPage = () => {
         printWindow.close();
         return;
       }
-      printWindow.document.write(`<!doctype html><html><head><title>Participant QR Codes</title><style>body{font-family:Arial,sans-serif;padding:24px}.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:24px}.item{text-align:center;border:1px solid #ddd;padding:16px;break-inside:avoid}.item svg{display:block;margin:16px auto;max-width:100%}h3{margin:0 0 8px}p{margin:4px 0;color:#444}@media print{.grid{grid-template-columns:repeat(2,1fr)}}</style></head><body><div class="grid">${qrItems}</div></body></html>`);
+      printWindow.document.write(`<!doctype html><html><head><title>Participant Event Tickets</title><style>
+        @page{size:A4 portrait;margin:0}*{box-sizing:border-box}body{width:210mm;margin:0;background:#fff;color:#172033;font-family:Arial,sans-serif}.ticket-grid{display:grid;grid-template-columns:1fr;gap:0}.ticket{width:210mm;height:74.25mm;position:relative;overflow:hidden;border:1px solid #d8dee8;background:#fff;break-inside:avoid;page-break-inside:avoid}.ticket-header{height:17mm;display:flex;align-items:center;gap:3mm;padding:3mm 5mm;background:#172033;color:#fff}.ticket-logo{width:11mm;height:11mm;object-fit:contain;border-radius:2mm;background:#fff;padding:1mm}.ticket-brand{min-width:0}.ticket-kicker{margin:0 0 1mm;color:#9dd9cf;font-size:7pt;font-weight:700;letter-spacing:1.2pt;text-transform:uppercase}.ticket-title{margin:0;overflow:hidden;font-size:13pt;white-space:nowrap;text-overflow:ellipsis}.ticket-body{height:49mm;display:grid;grid-template-columns:1fr 38mm;gap:4mm;padding:4mm 5mm}.ticket-label{margin:0 0 1mm;color:#768197;font-size:7pt;font-weight:700;letter-spacing:.8pt;text-transform:uppercase}.ticket-value{margin:0 0 3mm;font-size:9pt;font-weight:600}.ticket-name{font-size:15pt}.ticket-qr{display:flex;align-items:center;justify-content:center;border-left:1px dashed #cbd3df;padding-left:4mm}.ticket-qr svg{width:33mm;height:33mm}.ticket-footer{height:8.25mm;display:flex;justify-content:space-between;gap:12px;margin:0 5mm;padding:2mm 0;border-top:1px solid #e5e9ef;color:#768197;font-size:7pt}.ticket-footer strong{color:#172033}@media print{body{padding:0}.ticket{box-shadow:none}}
+      </style></head><body><div class="ticket-grid">${qrItems}</div></body></html>`);
       printWindow.document.close();
       printWindow.focus();
       printWindow.print();
       printWindow.onafterprint = () => printWindow.close();
       setPrintParticipants([]);
-    }, 100);
+    }, 250);
   };
 
   const handlePrintQr = (participant) => handlePrintQrs([participant]);
@@ -291,6 +307,8 @@ const ParticipantPage = () => {
               onQuickAction={handleQuickAction}
               onAttendanceToggle={handleManualAttendance}
               onPhotoShootToggle={handlePhotoShootToggle}
+              canMarkAttendance={participant.attendance || canMarkParticipant(participant)}
+              canMarkPhotoShoot={participant.photo_shoot || canMarkParticipant(participant)}
               onPaymentToggle={handlePaymentToggle}
               onEdit={handleEdit}
               onDelete={handleDelete}
@@ -303,10 +321,29 @@ const ParticipantPage = () => {
       </div>
       {printParticipants.map((participant) => (
         <div className="qr-print-item" key={participant.id}>
-          <h3>{participant.full_name}</h3>
-          <p>{participant.registration_number}</p>
-          <QRCodeSVG value={participant.qr_token} size={220} />
-          <p>{participant.function_event?.name || 'Event'}</p>
+          <article className="ticket">
+            <header className="ticket-header">
+              {participant.function_event?.logo_url && <img className="ticket-logo" src={participant.function_event.logo_url} alt="Event logo" />}
+              <div className="ticket-brand">
+                <p className="ticket-kicker">Event Access Pass</p>
+                <h2 className="ticket-title">{participant.function_event?.name || 'Event'}</h2>
+              </div>
+            </header>
+            <div className="ticket-body">
+              <div>
+                <p className="ticket-label">Participant</p>
+                <p className="ticket-value ticket-name">{participant.full_name}</p>
+                <p className="ticket-label">Registration</p>
+                <p className="ticket-value">{participant.registration_number}</p>
+                <p className="ticket-label">Date & Time</p>
+                <p className="ticket-value">{participant.function_event?.date || 'TBA'}<br />{participant.function_event?.start_time || 'TBA'} - {participant.function_event?.end_time || 'TBA'}</p>
+                <p className="ticket-label">Location</p>
+                <p className="ticket-value">{participant.function_event?.venue || 'TBA'}</p>
+              </div>
+              <div className="ticket-qr"><QRCodeSVG value={participant.qr_token} size={110} level="M" /></div>
+            </div>
+            <footer className="ticket-footer"><span>Present this QR code at check-in</span><strong>{participant.function_event?.status === 'active' ? 'VALID' : 'EVENT INACTIVE'}</strong></footer>
+          </article>
         </div>
       ))}
     </div>

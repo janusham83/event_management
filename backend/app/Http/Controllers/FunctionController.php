@@ -7,6 +7,8 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Str;
 
 class FunctionController extends Controller
 {
@@ -23,7 +25,7 @@ class FunctionController extends Controller
     {
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'logo_url' => ['nullable', 'url', 'max:2048'],
+            'logo' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
             'date' => ['required', 'date'],
             'start_time' => ['required'],
             'end_time' => ['required'],
@@ -36,7 +38,10 @@ class FunctionController extends Controller
             'organizer_phone' => ['nullable', 'string', 'max:20'],
         ]);
 
-        $function = DB::transaction(function () use ($data) {
+        $logoUrl = ! empty($data['logo']) ? $this->storeLogo($data['logo']) : null;
+        unset($data['logo']);
+
+        $function = DB::transaction(function () use ($data, $logoUrl) {
             $organizer = User::create([
                 'name' => $data['organizer_name'],
                 'email' => $data['organizer_email'],
@@ -48,6 +53,7 @@ class FunctionController extends Controller
 
             $function = FunctionEvent::create([
                 ...collect($data)->except(['organizer_name', 'organizer_email', 'organizer_password', 'organizer_phone'])->all(),
+                'logo_url' => $logoUrl,
                 'created_by' => Auth::id(),
                 'organizer_id' => $organizer->id,
             ]);
@@ -70,7 +76,7 @@ class FunctionController extends Controller
     {
         $data = $request->validate([
             'name' => ['sometimes', 'string', 'max:255'],
-            'logo_url' => ['sometimes', 'nullable', 'url', 'max:2048'],
+            'logo' => ['sometimes', 'nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
             'date' => ['sometimes', 'date'],
             'start_time' => ['sometimes'],
             'end_time' => ['sometimes'],
@@ -84,7 +90,10 @@ class FunctionController extends Controller
         ]);
 
         $organizerData = collect($data)->only(['organizer_name', 'organizer_email', 'organizer_password', 'organizer_phone'])->all();
-        $functionData = collect($data)->except(['organizer_name', 'organizer_email', 'organizer_password', 'organizer_phone'])->all();
+        $functionData = collect($data)->except(['organizer_name', 'organizer_email', 'organizer_password', 'organizer_phone', 'logo'])->all();
+        if (! empty($data['logo'])) {
+            $functionData['logo_url'] = $this->storeLogo($data['logo']);
+        }
 
         $function->update($functionData);
         if ($function->organizer && $organizerData) {
@@ -112,5 +121,15 @@ class FunctionController extends Controller
         $function->save();
 
         return response()->json($function);
+    }
+
+    private function storeLogo($logo): string
+    {
+        $directory = public_path('storage/function-logos');
+        File::ensureDirectoryExists($directory);
+        $filename = Str::uuid().'.'.$logo->getClientOriginalExtension();
+        $logo->move($directory, $filename);
+
+        return url('storage/function-logos/'.$filename);
     }
 }
