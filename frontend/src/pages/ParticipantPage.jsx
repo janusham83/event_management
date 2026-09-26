@@ -27,7 +27,7 @@ const emptyForm = {
   function_id: 1,
 };
 
-const ParticipantPage = () => {
+const ParticipantPage = ({ user }) => {
   const navigate = useNavigate();
   const [participants, setParticipants] = useState([]);
   const [search, setSearch] = useState('');
@@ -76,6 +76,28 @@ const ParticipantPage = () => {
     if (type === 'ticket') {
       navigate('/tickets/new');
     }
+  };
+
+  const handleWhatsAppTicket = (participant) => {
+    const recipient = normalizeWhatsAppNumber(participant.mobile_number);
+    if (!recipient) return;
+
+    const organizerPhone = user?.phone || '';
+    const ticketBaseUrl = import.meta.env.VITE_APP_URL || window.location.origin;
+    const ticketUrl = `${ticketBaseUrl}/ticket/${participant.qr_token}`;
+    const message = [
+      `Hello ${participant.full_name},`,
+      '',
+      `Your ticket for ${participant.function_event?.name || 'the event'} is ready.`,
+      `Registration: ${participant.registration_number}`,
+      `Date: ${participant.function_event?.date || 'TBA'}`,
+      `Venue: ${participant.function_event?.venue || 'TBA'}`,
+      organizerPhone ? `Organizer contact: ${organizerPhone}` : '',
+      '',
+      `Open or download your ticket: ${ticketUrl}`,
+    ].filter(Boolean).join('\n');
+
+    window.open(`https://wa.me/${recipient}?text=${encodeURIComponent(message)}`, '_blank', 'noopener,noreferrer');
   };
 
   const handleManualAttendance = async (participant) => {
@@ -313,6 +335,7 @@ const ParticipantPage = () => {
               onEdit={handleEdit}
               onDelete={handleDelete}
               onPrintQr={handlePrintQr}
+              onWhatsAppTicket={handleWhatsAppTicket}
               selected={selectedIds.includes(participant.id)}
               onToggleSelect={(id) => setSelectedIds((current) => current.includes(id) ? current.filter((item) => item !== id) : [...current, id])}
             />
@@ -351,3 +374,11 @@ const ParticipantPage = () => {
 };
 
 export default ParticipantPage;
+
+function normalizeWhatsAppNumber(value) {
+  const digits = String(value || '').replace(/\D/g, '');
+  if (!digits) return '';
+  if (digits.startsWith('00')) return digits.slice(2);
+  if (digits.startsWith('0')) return `94${digits.slice(1)}`;
+  return digits;
+}

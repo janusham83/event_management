@@ -1,6 +1,6 @@
 import StatusBadge from './StatusBadge';
 
-const ParticipantCard = ({ participant, onQuickAction, onAttendanceToggle, onPhotoShootToggle, onPaymentToggle, onEdit, onDelete, onPrintQr, selected, onToggleSelect, canMarkAttendance = true, canMarkPhotoShoot = true }) => {
+const ParticipantCard = ({ participant, onQuickAction, onAttendanceToggle, onPhotoShootToggle, onPaymentToggle, onEdit, onDelete, onPrintQr, onWhatsAppTicket, selected, onToggleSelect, canMarkAttendance = true, canMarkPhotoShoot = true }) => {
   const attendanceStatus = participant.attendance ? '✓ Attended' : 'Pending';
   const photoStatus = participant.photo_shoot ? '✓ Completed' : 'Pending';
   const paymentStatus = participant.payment ? '✓ Paid' : 'Pending';
@@ -39,6 +39,9 @@ const ParticipantCard = ({ participant, onQuickAction, onAttendanceToggle, onPho
           <button className="btn btn-sm btn-outline-dark" onClick={() => onPrintQr(participant)} title="Print QR code">
             <i className="bi bi-printer"></i>
             <span className="visually-hidden">Print QR code</span>
+          </button>
+          <button className="btn btn-sm btn-outline-success" onClick={() => onWhatsAppTicket(participant)} disabled={!participant.payment} title={participant.payment ? 'Send ticket link by WhatsApp' : 'Complete payment to send the ticket'}>
+            <i className="bi bi-whatsapp me-1"></i>WhatsApp Ticket
           </button>
           <button className="btn btn-sm btn-outline-secondary" onClick={() => onQuickAction('details', participant)}>View Details</button>
           <button className="btn btn-sm btn-outline-primary" onClick={() => onEdit(participant)} title="Edit participant">

@@ -118,6 +118,18 @@ class ParticipantController extends Controller
         return response()->json($participant->load(['functionEvent', 'attendance.user', 'photoShoot.user', 'issueTickets']));
     }
 
+    public function publicTicket(string $qrToken)
+    {
+        $participant = Participant::where('qr_token', $qrToken)
+            ->with('functionEvent')
+            ->firstOrFail();
+
+        return response()->json([
+            ...$participant->only(['full_name', 'registration_number', 'qr_token']),
+            'function_event' => $participant->functionEvent,
+        ]);
+    }
+
     public function update(Request $request, Participant $participant)
     {
         $data = $request->validate([
