@@ -34,15 +34,12 @@ class ParticipantController extends Controller
         if (auth()->user()->role === 'organizer' && (int) $function->id !== (int) auth()->user()->function_id) {
             return response()->json(['message' => 'You can only use your assigned function.'], 403);
         }
-        $registrationNumber = 'REG-' . date('Y') . '-' . str_pad((Participant::count() + 1), 6, '0', STR_PAD_LEFT);
-
-        $participant = Participant::create([
+        $participant = $this->createParticipant([
             'full_name' => $data['full_name'],
             'mobile_number' => $data['mobile_number'],
             'email' => $data['email'] ?? null,
             'organization' => $data['organization'] ?? null,
             'number_of_guests' => $data['number_of_guests'] ?? 0,
-            'registration_number' => $registrationNumber,
             'function_id' => $function->id,
             'qr_token' => Str::random(32),
             'status' => 'registered',
@@ -98,10 +95,9 @@ class ParticipantController extends Controller
 
         $created = DB::transaction(function () use ($rows, $functionId) {
             return collect($rows)->map(function ($row) use ($functionId) {
-                return Participant::create([
+                return $this->createParticipant([
                     ...$row,
                     'number_of_guests' => $row['number_of_guests'] ?? 0,
-                    'registration_number' => 'REG-' . date('Y') . '-' . str_pad((Participant::count() + 1), 6, '0', STR_PAD_LEFT),
                     'function_id' => $functionId,
                     'qr_token' => Str::random(32),
                     'status' => 'registered',
@@ -111,6 +107,21 @@ class ParticipantController extends Controller
         });
 
         return response()->json(['message' => "{$created->count()} participants registered successfully.", 'count' => $created->count()]);
+    }
+
+    private function createParticipant(array $attributes): Participant
+    {
+        return DB::transaction(function () use ($attributes) {
+            $participant = Participant::create([
+                ...$attributes,
+                'registration_number' => 'REG-PENDING-' . Str::uuid(),
+            ]);
+
+            $participant->registration_number = 'REG-' . date('Y') . '-' . str_pad((string) $participant->id, 6, '0', STR_PAD_LEFT);
+            $participant->save();
+
+            return $participant;
+        });
     }
 
     public function show(Participant $participant)
